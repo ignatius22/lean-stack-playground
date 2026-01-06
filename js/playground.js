@@ -28,16 +28,19 @@ class Playground {
     iframe.style.display = 'none';
     iframe.sandbox = 'allow-scripts';
 
-    // Security: Set restrictive CSP
-    iframe.setAttribute('csp', "default-src 'none'; script-src 'unsafe-inline'");
-
     document.body.appendChild(iframe);
     return iframe;
   }
 
   destroyIframe(iframe) {
-    if (iframe && iframe.parentNode) {
-      iframe.parentNode.removeChild(iframe);
+    if (iframe) {
+      // Clean up any event listeners
+      iframe.onload = null;
+
+      // Remove from DOM
+      if (iframe.parentNode) {
+        iframe.parentNode.removeChild(iframe);
+      }
     }
   }
 
@@ -61,7 +64,6 @@ class Playground {
           <html>
           <head>
             <meta charset="UTF-8">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline';">
           </head>
           <body>
             <script>
@@ -80,13 +82,27 @@ class Playground {
           </html>
         `;
 
-        // Use srcdoc to avoid cross-origin issues
-        iframe.srcdoc = html;
+        // Use blob URL to completely avoid cross-origin issues
+        const blob = new Blob([html], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
 
-        // Resolve after a short delay to allow code to execute
+        // Set iframe src to blob URL
+        iframe.src = blobUrl;
+
+        // Wait for iframe to load, then clean up blob URL
+        iframe.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          // Resolve after a short delay to allow code to execute
+          setTimeout(() => {
+            resolve();
+          }, 50);
+        };
+
+        // Fallback timeout in case onload doesn't fire
         setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
           resolve();
-        }, 50);
+        }, 1000);
 
       } catch (error) {
         reject(error);
