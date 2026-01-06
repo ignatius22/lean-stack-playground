@@ -26,7 +26,7 @@ class Playground {
   createSandboxedIframe() {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
-    iframe.sandbox = 'allow-scripts';
+    iframe.sandbox = 'allow-scripts allow-same-origin';
 
     // Security: Set restrictive CSP
     iframe.setAttribute('csp', "default-src 'none'; script-src 'unsafe-inline'");
@@ -55,8 +55,6 @@ class Playground {
           this.libraryIframe = iframe;
         }
 
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-
         // Build the HTML content with console interceptor
         const html = `
           <!DOCTYPE html>
@@ -82,9 +80,8 @@ class Playground {
           </html>
         `;
 
-        doc.open();
-        doc.write(html);
-        doc.close();
+        // Use srcdoc to avoid cross-origin issues
+        iframe.srcdoc = html;
 
         // Resolve after a short delay to allow code to execute
         setTimeout(() => {

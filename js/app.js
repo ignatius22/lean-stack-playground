@@ -182,9 +182,11 @@ class App {
   loadPattern(pattern) {
     this.currentPattern = pattern;
 
-    // Update editors
-    this.vanillaEditor.setValue(pattern.vanilla.code);
-    this.libraryEditor.setValue(pattern.library.code);
+    // Update editors safely
+    if (this.vanillaEditor && this.libraryEditor) {
+      this.vanillaEditor.setValue(pattern.vanilla.code);
+      this.libraryEditor.setValue(pattern.library.code);
+    }
 
     // Update UI
     this.updatePatternInfo(pattern);
@@ -200,8 +202,9 @@ class App {
     // Auto-save
     this.autoSave();
 
-    // Scroll to playground
-    document.getElementById('playground').scrollIntoView({ behavior: 'smooth' });
+    // Don't auto-scroll - let user stay where they are
+    // The editors are visible from the pattern cards
+    console.log('Pattern loaded:', pattern.title);
   }
 
   updatePatternInfo(pattern) {

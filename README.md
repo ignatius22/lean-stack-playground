@@ -69,7 +69,7 @@ Six carefully crafted patterns comparing vanilla JS to popular libraries:
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/lean-stack-playground.git
+git clone https://github.com/ignatius22/lean-stack-playground.git
 
 # Navigate to the directory
 cd lean-stack-playground
@@ -297,7 +297,7 @@ MIT License - feel free to use this in your own projects!
 - [Live Demo](https://codecraftie.netlify.app)
 - [HackerNoon Hackathon](https://hackernoon.com)
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-- [Report Issues](https://github.com/yourusername/lean-stack-playground/issues)
+- [Report Issues](https://github.com/ignatius22/lean-stack-playground/issues)
 
 ## 💡 Philosophy
 

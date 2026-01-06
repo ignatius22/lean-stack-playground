@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimal Test - Lean Stack</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>⚡ Lean Stack Playground</h1>
+      <p class="hero-tagline">Stop Installing Libraries for Simple Features</p>
+      <p class="hero-subtitle">Minimal test - Can you see this?</p>
+    </div>
+  </section>
+
+  <!-- Pattern Selection -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Can you see the pattern cards below?</h2>
+      <div id="patterns-grid" class="patterns-grid">
+        <!-- Will be filled by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <div style="padding: 40px; background: #2a2a3e; margin: 20px; color: white;">
+    <h2>Debug Info:</h2>
+    <div id="debug"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/patterns/patterns.js"></script>
+
+  <script>
+    const debugDiv = document.getElementById('debug');
+
+    function log(msg) {
+      console.log(msg);
+      debugDiv.innerHTML += msg + '<br>';
+    }
+
+    log('✅ JavaScript is running');
+    log('Patterns loaded: ' + (typeof patterns !== 'undefined' ? 'YES' : 'NO'));
+
+    if (typeof patterns !== 'undefined') {
+      log('Number of patterns: ' + patterns.length);
+
+      const grid = document.getElementById('patterns-grid');
+
+      patterns.forEach(pattern => {
+        log('Creating card for: ' + pattern.title);
+
+        const card = document.createElement('div');
+        card.className = 'pattern-card';
+        card.innerHTML = `
+          <h3>${pattern.title}</h3>
+          <p>${pattern.description}</p>
+          <div class="pattern-stats">
+            <div class="stat">
+              <span class="stat-label">Vanilla</span>
+              <span class="stat-value">${pattern.vanillaSize}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">${pattern.libraryName}</span>
+              <span class="stat-value">${pattern.librarySize}</span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          log('Clicked: ' + pattern.title);
+          alert('Clicked: ' + pattern.title);
+        });
+
+        grid.appendChild(card);
+      });
+
+      log('✅ Pattern cards created');
+    } else {
+      log('❌ Patterns not loaded!');
+    }
+  </script>
+</body>
+</html>

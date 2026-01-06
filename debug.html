@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug - Lean Stack Playground</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a2e;
+      color: #fff;
+    }
+    .status { padding: 10px; margin: 5px 0; border-radius: 5px; }
+    .success { background: #00d4aa33; border: 1px solid #00d4aa; }
+    .error { background: #ff475733; border: 1px solid #ff4757; }
+    .warning { background: #ffa80133; border: 1px solid #ffa801; }
+    button { padding: 10px 20px; margin: 10px 5px 10px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Lean Stack Playground Debugger</h1>
+  <div id="status"></div>
+
+  <h2>Quick Tests:</h2>
+  <button onclick="testPatterns()">Test Patterns Load</button>
+  <button onclick="testConsole()">Test Console Class</button>
+  <button onclick="testPlayground()">Test Playground Class</button>
+  <button onclick="window.location.href='index.html'">Go to Main App</button>
+
+  <script src="js/patterns/patterns.js"></script>
+  <script src="js/console.js"></script>
+  <script src="js/playground.js"></script>
+
+  <script>
+    const statusDiv = document.getElementById('status');
+
+    function log(message, type = 'success') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.textContent = message;
+      statusDiv.appendChild(div);
+      console.log(message);
+    }
+
+    // Auto-run on load
+    window.addEventListener('DOMContentLoaded', () => {
+      log('🚀 Starting diagnostics...', 'warning');
+
+      // Test 1: Check if patterns loaded
+      if (typeof patterns !== 'undefined') {
+        log(`✅ Patterns loaded: ${patterns.length} patterns found`);
+        patterns.forEach((p, i) => {
+          log(`  ${i+1}. ${p.title} (${p.vanillaSize} vs ${p.librarySize})`);
+        });
+      } else {
+        log('❌ Patterns failed to load!', 'error');
+      }
+
+      // Test 2: Check ConsoleOutput class
+      if (typeof ConsoleOutput !== 'undefined') {
+        log('✅ ConsoleOutput class loaded');
+      } else {
+        log('❌ ConsoleOutput class missing!', 'error');
+      }
+
+      // Test 3: Check Playground class
+      if (typeof Playground !== 'undefined') {
+        log('✅ Playground class loaded');
+      } else {
+        log('❌ Playground class missing!', 'error');
+      }
+
+      log('✅ Diagnostics complete!', 'success');
+    });
+
+    function testPatterns() {
+      log('\n📦 Testing pattern structure...', 'warning');
+      if (patterns && patterns.length > 0) {
+        const pattern = patterns[0];
+        log(`Pattern ID: ${pattern.id}`);
+        log(`Pattern Title: ${pattern.title}`);
+        log(`Has vanilla code: ${!!pattern.vanilla?.code}`);
+        log(`Has library code: ${!!pattern.library?.code}`);
+        log(`Vanilla code length: ${pattern.vanilla?.code?.length || 0} chars`);
+        log(`Library code length: ${pattern.library?.code?.length || 0} chars`);
+      }
+    }
+
+    function testConsole() {
+      log('\n📟 Testing ConsoleOutput class...', 'warning');
+      const testDiv = document.createElement('div');
+      testDiv.id = 'test-console';
+      document.body.appendChild(testDiv);
+
+      try {
+        const consoleOutput = new ConsoleOutput(testDiv);
+        log('✅ ConsoleOutput instantiated');
+
+        consoleOutput.log('Test message', 'log', 'vanilla');
+        log('✅ Log method works');
+
+        consoleOutput.error('Test error', 'library');
+        log('✅ Error method works');
+
+        consoleOutput.performance(10, 50);
+        log('✅ Performance method works');
+
+        testDiv.remove();
+      } catch (e) {
+        log(`❌ ConsoleOutput error: ${e.message}`, 'error');
+        console.error(e);
+      }
+    }
+
+    function testPlayground() {
+      log('\n🎮 Testing Playground class...', 'warning');
+      const testDiv = document.createElement('div');
+      testDiv.id = 'test-console2';
+      document.body.appendChild(testDiv);
+
+      try {
+        const consoleOutput = new ConsoleOutput(testDiv);
+        const playground = new Playground(consoleOutput);
+        log('✅ Playground instantiated');
+
+        // Test simple code execution
+        playground.executeCode('console.log("Hello from test!");', 'vanilla')
+          .then(() => {
+            log('✅ Code execution works');
+            setTimeout(() => testDiv.remove(), 2000);
+          })
+          .catch(e => {
+            log(`❌ Execution error: ${e.message}`, 'error');
+            console.error(e);
+          });
+      } catch (e) {
+        log(`❌ Playground error: ${e.message}`, 'error');
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>
