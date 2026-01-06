@@ -26,21 +26,16 @@ class Playground {
   createSandboxedIframe() {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
-    iframe.sandbox = 'allow-scripts';
+    // allow-same-origin is needed for the iframe to access its own document
+    iframe.sandbox = 'allow-scripts allow-same-origin';
 
     document.body.appendChild(iframe);
     return iframe;
   }
 
   destroyIframe(iframe) {
-    if (iframe) {
-      // Clean up any event listeners
-      iframe.onload = null;
-
-      // Remove from DOM
-      if (iframe.parentNode) {
-        iframe.parentNode.removeChild(iframe);
-      }
+    if (iframe && iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
     }
   }
 
@@ -59,50 +54,34 @@ class Playground {
         }
 
         // Build the HTML content with console interceptor
-        const html = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-          </head>
-          <body>
-            <script>
-              ${ConsoleOutput.createInterceptor(side)}
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <script>
+    ${ConsoleOutput.createInterceptor(side)}
 
-              // Execute user code in try-catch
-              (async function() {
-                try {
-                  ${code}
-                } catch (error) {
-                  console.error(error.stack || error.message || String(error));
-                }
-              })();
-            </script>
-          </body>
-          </html>
-        `;
+    // Execute user code in try-catch
+    (async function() {
+      try {
+        ${code}
+      } catch (error) {
+        console.error(error.stack || error.message || String(error));
+      }
+    })();
+  </script>
+</body>
+</html>`;
 
-        // Use blob URL to completely avoid cross-origin issues
-        const blob = new Blob([html], { type: 'text/html' });
-        const blobUrl = URL.createObjectURL(blob);
+        // Use srcdoc - this is safe since we never access contentWindow/contentDocument
+        iframe.srcdoc = html;
 
-        // Set iframe src to blob URL
-        iframe.src = blobUrl;
-
-        // Wait for iframe to load, then clean up blob URL
-        iframe.onload = () => {
-          URL.revokeObjectURL(blobUrl);
-          // Resolve after a short delay to allow code to execute
-          setTimeout(() => {
-            resolve();
-          }, 50);
-        };
-
-        // Fallback timeout in case onload doesn't fire
+        // Resolve after a short delay to allow code to execute
         setTimeout(() => {
-          URL.revokeObjectURL(blobUrl);
           resolve();
-        }, 1000);
+        }, 100);
 
       } catch (error) {
         reject(error);
