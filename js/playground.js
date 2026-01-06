@@ -10,14 +10,14 @@ class Playground {
 
   setupMessageListener() {
     window.addEventListener('message', (event) => {
-      // Security check - only accept messages from our iframes
-      if (event.source !== this.vanillaIframe?.contentWindow &&
-          event.source !== this.libraryIframe?.contentWindow) {
+      // Security check - only accept console messages with expected structure
+      if (!event.data || event.data.type !== 'console') {
         return;
       }
 
-      if (event.data && event.data.type === 'console') {
-        const { level, message, side } = event.data;
+      // Validate message structure
+      const { level, message, side } = event.data;
+      if (level && message && (side === 'vanilla' || side === 'library')) {
         this.consoleOutput[level](message, side);
       }
     });
@@ -26,7 +26,7 @@ class Playground {
   createSandboxedIframe() {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
-    iframe.sandbox = 'allow-scripts allow-same-origin';
+    iframe.sandbox = 'allow-scripts';
 
     // Security: Set restrictive CSP
     iframe.setAttribute('csp', "default-src 'none'; script-src 'unsafe-inline'");
