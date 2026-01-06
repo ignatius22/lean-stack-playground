@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive JavaScript playground comparing vanilla JS patterns with library equivalents. See real performance metrics and save 95% bundle size.">
+  <meta name="keywords" content="JavaScript, vanilla JS, libraries, performance, bundle size, code playground">
+  <meta name="author" content="Codecraftie Solutions">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Lean Stack Playground - Stop Installing Libraries for Simple Features">
+  <meta property="og:description" content="Interactive playground showing how vanilla JavaScript patterns replace entire libraries with 95% less code.">
+  <meta property="og:url" content="https://codecraftie.netlify.app">
+
+  <title>Lean Stack Playground - Vanilla JS vs Libraries</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Monaco Editor -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css">
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>⚡ Lean Stack Playground</h1>
+      <p class="hero-tagline">Stop Installing Libraries for Simple Features</p>
+      <p class="hero-subtitle">See how vanilla JavaScript patterns replace entire libraries with 95% less code. Edit, execute, and compare in real-time.</p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value">95%</span>
+          <span class="hero-stat-label">Smaller Bundle Size</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">0</span>
+          <span class="hero-stat-label">Dependencies</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">6</span>
+          <span class="hero-stat-label">Pattern Comparisons</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pattern Selection -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Choose a Pattern to Explore</h2>
+      <div id="patterns-grid" class="patterns-grid">
+        <!-- Pattern cards will be inserted here by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Playground -->
+  <section id="playground" class="section">
+    <div class="container">
+      <!-- Playground Header -->
+      <div class="playground-header">
+        <div class="pattern-info">
+          <h2 id="current-pattern-title">Select a Pattern</h2>
+          <p id="pattern-description">Choose a pattern above to start exploring</p>
+        </div>
+        <div class="playground-controls">
+          <button id="run-btn" class="btn btn-primary">
+            ▶️ Run Code
+          </button>
+          <button id="reset-btn" class="btn btn-secondary">
+            🔄 Reset
+          </button>
+          <button id="share-btn" class="btn btn-secondary">
+            🔗 Share
+          </button>
+        </div>
+      </div>
+
+      <!-- Editors -->
+      <div class="editors-container">
+        <!-- Vanilla Editor -->
+        <div class="editor-wrapper">
+          <div class="editor-header">
+            <div id="vanilla-label">
+              <span class="editor-name">Vanilla JavaScript</span>
+              <span class="editor-size">0kb</span>
+            </div>
+            <button id="copy-vanilla-btn" class="btn btn-icon btn-secondary" title="Copy code">
+              📋
+            </button>
+          </div>
+          <div id="vanilla-editor" class="editor-container"></div>
+        </div>
+
+        <!-- Library Editor -->
+        <div class="editor-wrapper">
+          <div class="editor-header">
+            <div id="library-label">
+              <span class="editor-name">Library</span>
+              <span class="editor-size">0kb</span>
+            </div>
+            <button id="copy-library-btn" class="btn btn-icon btn-secondary" title="Copy code">
+              📋
+            </button>
+          </div>
+          <div id="library-editor" class="editor-container"></div>
+        </div>
+      </div>
+
+      <!-- Console Output -->
+      <div class="console-container">
+        <div class="console-header">
+          <h3>📟 Console Output & Performance</h3>
+          <button id="clear-console-btn" class="btn btn-icon btn-secondary" title="Clear console">
+            🗑️
+          </button>
+        </div>
+        <div id="console-output">
+          <div class="console-empty">
+            <span class="console-empty-icon">💡</span>
+            <p>Click "Run Code" to see console output and performance metrics</p>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem;">Tip: Press Cmd/Ctrl + Enter to run code</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section">
+    <div class="about-content">
+      <h2>Why Lean Stack?</h2>
+      <p>
+        Modern web development often means installing dozens of npm packages for simple features.
+        Each library adds kilobytes (or megabytes!) to your bundle, slowing down your app.
+      </p>
+      <p>
+        This playground shows you the alternative: elegant vanilla JavaScript patterns that do the same job
+        with 95% less code. Edit the code, run it, see the performance difference, and use it in your projects.
+      </p>
+
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <h3>Live Execution</h3>
+          <p>Run code in sandboxed iframes and see real console output instantly</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <h3>Performance Metrics</h3>
+          <p>See actual execution time comparison between vanilla and library code</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔗</div>
+          <h3>Share & Collaborate</h3>
+          <p>Share your experiments via URL and save your work automatically</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📱</div>
+          <h3>Mobile Friendly</h3>
+          <p>Fully responsive design works on desktop, tablet, and mobile</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <h3>Production Ready</h3>
+          <p>Copy patterns directly into your projects - they just work</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🛡️</div>
+          <h3>Secure Sandbox</h3>
+          <p>Code runs in isolated iframes with strict CSP policies</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>
+        Built with ❤️ by <a href="https://codecraftie.netlify.app" target="_blank">Codecraftie Solutions</a>
+        for the <a href="https://hackernoon.com" target="_blank">HackerNoon Proof of Usefulness Hackathon</a>
+      </p>
+      <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+        100% Open Source • No Build Step • No Dependencies
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- Monaco Editor Loader -->
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+  <script>
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+    require(['vs/editor/editor.main'], function() {
+      // Monaco is loaded and ready
+      console.log('Monaco Editor loaded successfully');
+    });
+  </script>
+
+  <!-- Pattern data -->
+  <script src="js/patterns/patterns.js"></script>
+
+  <!-- Console handler -->
+  <script src="js/console.js"></script>
+
+  <!-- Playground engine -->
+  <script src="js/playground.js"></script>
+
+  <!-- Main app -->
+  <script src="js/app.js"></script>
+</body>
+</html>
