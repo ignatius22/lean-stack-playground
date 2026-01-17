@@ -5,20 +5,34 @@ class Playground {
     this.vanillaIframe = null;
     this.libraryIframe = null;
     this.isRunning = false;
+    this.vanillaExecutionTime = 0;
+    this.libraryExecutionTime = 0;
     this.setupMessageListener();
   }
 
   setupMessageListener() {
     window.addEventListener('message', (event) => {
-      // Security check - only accept console messages with expected structure
-      if (!event.data || event.data.type !== 'console') {
+      // Security check - only accept messages with expected structure
+      if (!event.data || !event.data.type) {
         return;
       }
 
-      // Validate message structure
-      const { level, message, side } = event.data;
-      if (level && message && (side === 'vanilla' || side === 'library')) {
-        this.consoleOutput[level](message, side);
+      // Handle console messages
+      if (event.data.type === 'console') {
+        const { level, message, side } = event.data;
+        if (level && message && (side === 'vanilla' || side === 'library')) {
+          this.consoleOutput[level](message, side);
+        }
+      }
+
+      // Handle performance timing messages
+      if (event.data.type === 'performance') {
+        const { side, time } = event.data;
+        if (side === 'vanilla') {
+          this.vanillaExecutionTime = time;
+        } else if (side === 'library') {
+          this.libraryExecutionTime = time;
+        }
       }
     });
   }
@@ -53,7 +67,7 @@ class Playground {
           this.libraryIframe = iframe;
         }
 
-        // Build the HTML content with console interceptor
+        // Build the HTML content with console interceptor and performance timing
         const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -63,12 +77,24 @@ class Playground {
   <script>
     ${ConsoleOutput.createInterceptor(side)}
 
-    // Execute user code in try-catch
+    // Execute user code with performance timing
     (async function() {
+      const startTime = performance.now();
       try {
         ${code}
       } catch (error) {
         console.error(error.stack || error.message || String(error));
+      } finally {
+        // Wait a bit for async operations to complete, then send timing
+        setTimeout(() => {
+          const endTime = performance.now();
+          const executionTime = endTime - startTime;
+          window.parent.postMessage({
+            type: 'performance',
+            side: '${side}',
+            time: executionTime
+          }, '*');
+        }, 50);
       }
     })();
   </script>
@@ -98,27 +124,25 @@ class Playground {
     this.isRunning = true;
     this.consoleOutput.clear();
 
+    // Reset timing
+    this.vanillaExecutionTime = 0;
+    this.libraryExecutionTime = 0;
+
     try {
-      // Measure execution time for vanilla
-      const vanillaStart = performance.now();
+      // Execute vanilla code
       await this.executeCode(vanillaCode, 'vanilla');
-      const vanillaEnd = performance.now();
-      const vanillaTime = vanillaEnd - vanillaStart;
 
       // Small delay between executions
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Measure execution time for library
-      const libraryStart = performance.now();
+      // Execute library code
       await this.executeCode(libraryCode, 'library');
-      const libraryEnd = performance.now();
-      const libraryTime = libraryEnd - libraryStart;
 
-      // Wait a bit for async operations to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for async operations and timing messages to arrive
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      // Display performance comparison
-      this.consoleOutput.performance(vanillaTime, libraryTime);
+      // Display performance comparison using actual execution times from iframes
+      this.consoleOutput.performance(this.vanillaExecutionTime, this.libraryExecutionTime);
 
     } catch (error) {
       this.consoleOutput.error(`Execution error: ${error.message}`);

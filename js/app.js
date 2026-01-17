@@ -13,33 +13,68 @@ class App {
   }
 
   async init() {
-    // Wait for Monaco to load
-    await this.waitForMonaco();
+    const loadingOverlay = document.getElementById('loading-overlay');
 
-    // Initialize components
-    this.initializeEditors();
-    this.initializeConsole();
-    this.initializePlayground();
-    this.initializeEventListeners();
-    this.initializePatternSelector();
-    this.initializeKeyboardShortcuts();
+    try {
+      // Show loading
+      if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+      }
 
-    // Load from URL or localStorage or default pattern
-    this.loadInitialState();
+      // Wait for Monaco to load
+      await this.waitForMonaco();
+
+      // Initialize components
+      this.initializeEditors();
+      this.initializeConsole();
+      this.initializePlayground();
+      this.initializeEventListeners();
+      this.initializePatternSelector();
+      this.initializeKeyboardShortcuts();
+
+      // Load from URL or localStorage or default pattern
+      this.loadInitialState();
+
+      // Hide loading
+      if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Initialization error:', error);
+      if (loadingOverlay) {
+        loadingOverlay.innerHTML = `
+          <div style="text-align: center;">
+            <p style="color: var(--error); font-size: 1.2rem; margin-bottom: 1rem;">⚠️ Failed to load editor</p>
+            <p style="color: var(--text-secondary);">Please refresh the page to try again.</p>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">Refresh Page</button>
+          </div>
+        `;
+      }
+      this.showToast('Failed to initialize app. Please refresh the page.', 'error');
+    }
   }
 
   waitForMonaco() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       if (window.monaco) {
         resolve();
-      } else {
-        const checkMonaco = setInterval(() => {
-          if (window.monaco) {
-            clearInterval(checkMonaco);
-            resolve();
-          }
-        }, 100);
+        return;
       }
+
+      let attempts = 0;
+      const maxAttempts = 100; // 10 seconds timeout
+
+      const checkMonaco = setInterval(() => {
+        attempts++;
+
+        if (window.monaco) {
+          clearInterval(checkMonaco);
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkMonaco);
+          reject(new Error('Monaco Editor failed to load. Please check your internet connection.'));
+        }
+      }, 100);
     });
   }
 
@@ -140,6 +175,9 @@ class App {
     this.patterns.forEach(pattern => {
       const card = document.createElement('div');
       card.className = 'pattern-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', `Load ${pattern.title} pattern: ${pattern.description}`);
       card.innerHTML = `
         <h3>${pattern.title}</h3>
         <p>${pattern.description}</p>
@@ -155,8 +193,17 @@ class App {
         </div>
       `;
 
+      // Click handler
       card.addEventListener('click', () => {
         this.loadPattern(pattern);
+      });
+
+      // Keyboard handler for accessibility
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.loadPattern(pattern);
+        }
       });
 
       grid.appendChild(card);
@@ -229,18 +276,26 @@ class App {
     if (!vanillaCode.trim() && !libraryCode.trim()) {
       this.consoleOutput.clear();
       this.consoleOutput.warn('No code to execute', 'vanilla');
+      this.showToast('Please enter some code to run', 'warning');
       return;
     }
 
     const runBtn = document.getElementById('run-btn');
+    const originalText = runBtn.textContent;
     runBtn.disabled = true;
-    runBtn.textContent = 'Running...';
+    runBtn.textContent = '⏳ Running...';
+    runBtn.setAttribute('aria-busy', 'true');
 
     try {
       await this.playground.runBoth(vanillaCode, libraryCode);
+    } catch (error) {
+      console.error('Execution error:', error);
+      this.showToast('Code execution failed. Check console for details.', 'error');
+      this.consoleOutput.error(`Execution failed: ${error.message}`, 'vanilla');
     } finally {
       runBtn.disabled = false;
-      runBtn.textContent = 'Run Code';
+      runBtn.textContent = originalText;
+      runBtn.removeAttribute('aria-busy');
     }
   }
 
@@ -270,7 +325,10 @@ class App {
 
       // Find the pattern
       const pattern = this.patterns.find(p => p.id === state.patternId);
-      if (!pattern) return false;
+      if (!pattern) {
+        console.warn('Autosaved pattern not found');
+        return false;
+      }
 
       // Load the pattern first
       this.currentPattern = pattern;
@@ -288,6 +346,7 @@ class App {
       return true;
     } catch (error) {
       console.error('Failed to load autosave:', error);
+      this.showToast('Failed to load saved work. Starting fresh.', 'warning');
       return false;
     }
   }
@@ -324,7 +383,10 @@ class App {
 
       // Find the pattern
       const pattern = this.patterns.find(p => p.id === state.p);
-      if (!pattern) return false;
+      if (!pattern) {
+        this.showToast('Shared link is invalid or outdated.', 'error');
+        return false;
+      }
 
       // Load the pattern first
       this.currentPattern = pattern;
@@ -339,9 +401,11 @@ class App {
         card.classList.toggle('active', this.patterns[index].id === pattern.id);
       });
 
+      this.showToast('Shared code loaded successfully!', 'success');
       return true;
     } catch (error) {
       console.error('Failed to load from URL:', error);
+      this.showToast('Failed to load shared link. URL may be corrupted.', 'error');
       return false;
     }
   }
@@ -359,13 +423,27 @@ class App {
   }
 
   compressCode(code) {
-    // Simple compression: just return the code for now
-    // Could implement LZString or similar for better compression
-    return code;
+    try {
+      // Use LZString for URL-safe compression
+      return LZString.compressToEncodedURIComponent(code);
+    } catch (error) {
+      console.error('Compression error:', error);
+      // Fallback to uncompressed
+      return code;
+    }
   }
 
   decompressCode(code) {
-    return code;
+    try {
+      // Try to decompress
+      const decompressed = LZString.decompressFromEncodedURIComponent(code);
+      // If decompression returns null, the string wasn't compressed
+      return decompressed || code;
+    } catch (error) {
+      console.error('Decompression error:', error);
+      // Fallback to assuming uncompressed
+      return code;
+    }
   }
 
   async copyToClipboard(text, label = 'Content') {
@@ -386,7 +464,7 @@ class App {
     }
   }
 
-  showToast(message) {
+  showToast(message, type = 'success') {
     // Create toast element if it doesn't exist
     let toast = document.getElementById('toast');
     if (!toast) {
@@ -396,12 +474,17 @@ class App {
       document.body.appendChild(toast);
     }
 
+    // Remove previous type classes
+    toast.classList.remove('toast-success', 'toast-error', 'toast-warning');
+
+    // Add type-specific class
+    toast.classList.add(`toast-${type}`);
     toast.textContent = message;
     toast.classList.add('show');
 
     setTimeout(() => {
       toast.classList.remove('show');
-    }, 3000);
+    }, type === 'error' ? 5000 : 3000); // Show errors longer
   }
 }
 

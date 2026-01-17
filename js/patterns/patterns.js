@@ -336,11 +336,24 @@ const http = {
     console.log(\`📡 \${config.method || 'GET'} \${config.url}\`);
 
     try {
-      // Simulate network request
+      // Real fetch request
+      const fetchOptions = {
+        method: config.method || 'GET',
+        headers: config.headers || {}
+      };
+
+      if (config.body) {
+        fetchOptions.body = JSON.stringify(config.body);
+        fetchOptions.headers['Content-Type'] = 'application/json';
+      }
+
+      const fetchResponse = await fetch(config.url, fetchOptions);
+      const data = await fetchResponse.json();
+
       const response = {
-        status: 200,
-        data: { message: 'Success', timestamp: Date.now() },
-        headers: { 'content-type': 'application/json' }
+        status: fetchResponse.status,
+        data: data,
+        headers: Object.fromEntries(fetchResponse.headers.entries())
       };
 
       // Apply response interceptors
@@ -377,12 +390,16 @@ http.interceptors.response.push((response) => {
   return response;
 });
 
-// Test requests
-http.get('/api/users').then(r => console.log('Data:', r.data));
+// Test requests with real API
+http.get('https://jsonplaceholder.typicode.com/users/1').then(r => console.log('User:', r.data));
 setTimeout(() => {
-  http.post('/api/users', { name: 'Alice' }).then(r => console.log('Posted:', r.data));
+  http.post('https://jsonplaceholder.typicode.com/posts', {
+    title: 'Test Post',
+    body: 'Hello from Lean Stack!',
+    userId: 1
+  }).then(r => console.log('Created post:', r.data));
 }, 100);
-setTimeout(() => console.log('✓ HTTP client complete'), 200);`
+setTimeout(() => console.log('✓ HTTP client complete'), 1000);`
     },
     library: {
       code: `// Axios-style HTTP client
@@ -409,11 +426,24 @@ class AxiosInstance {
     console.log(\`📡 \${config.method || 'GET'} \${config.url}\`);
 
     try {
-      // Simulate network request
+      // Real fetch request
+      const fetchOptions = {
+        method: config.method || 'GET',
+        headers: config.headers || {}
+      };
+
+      if (config.data) {
+        fetchOptions.body = JSON.stringify(config.data);
+        fetchOptions.headers['Content-Type'] = 'application/json';
+      }
+
+      const fetchResponse = await fetch(config.url, fetchOptions);
+      const data = await fetchResponse.json();
+
       const response = {
-        status: 200,
-        statusText: 'OK',
-        data: { message: 'Success', timestamp: Date.now() },
+        status: fetchResponse.status,
+        statusText: fetchResponse.statusText,
+        data: data,
         headers: config.headers,
         config: config
       };
@@ -458,12 +488,16 @@ axios.interceptors.response.handlers.push({
   }
 });
 
-// Test requests
-axios.get('/api/users').then(r => console.log('Data:', r.data));
+// Test requests with real API
+axios.get('https://jsonplaceholder.typicode.com/users/1').then(r => console.log('User:', r.data));
 setTimeout(() => {
-  axios.post('/api/users', { name: 'Alice' }).then(r => console.log('Posted:', r.data));
+  axios.post('https://jsonplaceholder.typicode.com/posts', {
+    title: 'Test Post',
+    body: 'Hello from Lean Stack!',
+    userId: 1
+  }).then(r => console.log('Created post:', r.data));
 }, 100);
-setTimeout(() => console.log('✓ Axios-style complete'), 200);`
+setTimeout(() => console.log('✓ Axios-style complete'), 1000);`
     }
   },
   {
