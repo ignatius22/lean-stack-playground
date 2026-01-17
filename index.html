@@ -23,6 +23,9 @@
 
   <!-- Monaco Editor -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css">
+
+  <!-- LZString for URL compression -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 </head>
 <body>
   <!-- Hero Section -->
@@ -62,6 +65,11 @@
   <!-- Interactive Playground -->
   <section id="playground" class="section">
     <div class="container">
+      <!-- Loading overlay -->
+      <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Loading editor...</p>
+      </div>
       <!-- Playground Header -->
       <div class="playground-header">
         <div class="pattern-info">
@@ -69,20 +77,20 @@
           <p id="pattern-description">Choose a pattern above to start exploring</p>
         </div>
         <div class="playground-controls">
-          <button id="run-btn" class="btn btn-primary">
+          <button id="run-btn" class="btn btn-primary" aria-label="Run code in both editors">
             ▶️ Run Code
           </button>
-          <button id="reset-btn" class="btn btn-secondary">
+          <button id="reset-btn" class="btn btn-secondary" aria-label="Reset code to original pattern">
             🔄 Reset
           </button>
-          <button id="share-btn" class="btn btn-secondary">
+          <button id="share-btn" class="btn btn-secondary" aria-label="Generate and copy share link">
             🔗 Share
           </button>
         </div>
       </div>
 
       <!-- Editors -->
-      <div class="editors-container">
+      <div class="editors-container" role="region" aria-label="Code editors">
         <!-- Vanilla Editor -->
         <div class="editor-wrapper">
           <div class="editor-header">
@@ -90,11 +98,11 @@
               <span class="editor-name">Vanilla JavaScript</span>
               <span class="editor-size">0kb</span>
             </div>
-            <button id="copy-vanilla-btn" class="btn btn-icon btn-secondary" title="Copy code">
+            <button id="copy-vanilla-btn" class="btn btn-icon btn-secondary" title="Copy vanilla JavaScript code" aria-label="Copy vanilla JavaScript code to clipboard">
               📋
             </button>
           </div>
-          <div id="vanilla-editor" class="editor-container"></div>
+          <div id="vanilla-editor" class="editor-container" role="textbox" aria-label="Vanilla JavaScript code editor"></div>
         </div>
 
         <!-- Library Editor -->
@@ -104,23 +112,23 @@
               <span class="editor-name">Library</span>
               <span class="editor-size">0kb</span>
             </div>
-            <button id="copy-library-btn" class="btn btn-icon btn-secondary" title="Copy code">
+            <button id="copy-library-btn" class="btn btn-icon btn-secondary" title="Copy library code" aria-label="Copy library code to clipboard">
               📋
             </button>
           </div>
-          <div id="library-editor" class="editor-container"></div>
+          <div id="library-editor" class="editor-container" role="textbox" aria-label="Library code editor"></div>
         </div>
       </div>
 
       <!-- Console Output -->
-      <div class="console-container">
+      <div class="console-container" role="region" aria-label="Console output">
         <div class="console-header">
           <h3>📟 Console Output & Performance</h3>
-          <button id="clear-console-btn" class="btn btn-icon btn-secondary" title="Clear console">
+          <button id="clear-console-btn" class="btn btn-icon btn-secondary" title="Clear console" aria-label="Clear console output">
             🗑️
           </button>
         </div>
-        <div id="console-output">
+        <div id="console-output" role="log" aria-live="polite" aria-atomic="false">
           <div class="console-empty">
             <span class="console-empty-icon">💡</span>
             <p>Click "Run Code" to see console output and performance metrics</p>
