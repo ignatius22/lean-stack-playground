@@ -46,63 +46,61 @@ console.log('Final state:', store.getState());
 console.log('✓ Vanilla state management complete');`
     },
     library: {
-      code: `// Redux-style state management
-const initialState = { count: 0, user: 'Alice' };
-let state = initialState;
-const listeners = [];
+      code: `// Real Redux from CDN (45kb minified)
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/redux@4.2.1/dist/redux.min.js';
+script.onload = () => {
+  console.log('✓ Redux library loaded (45kb)');
 
-function reducer(state, action) {
-  switch (action.type) {
-    case 'SET_COUNT':
-      return { ...state, count: action.payload };
-    case 'SET_USER':
-      return { ...state, user: action.payload };
-    case 'UPDATE_BOTH':
-      return {
-        ...state,
-        count: action.payload.count,
-        user: action.payload.user
-      };
-    default:
-      return state;
+  // Define reducer
+  const initialState = { count: 0, user: 'Alice' };
+
+  function reducer(state = initialState, action) {
+    switch (action.type) {
+      case 'SET_COUNT':
+        return { ...state, count: action.payload };
+      case 'SET_USER':
+        return { ...state, user: action.payload };
+      case 'UPDATE_BOTH':
+        return {
+          ...state,
+          count: action.payload.count,
+          user: action.payload.user
+        };
+      default:
+        return state;
+    }
   }
-}
 
-function dispatch(action) {
-  state = reducer(state, action);
-  listeners.forEach(listener => listener(state));
-}
+  // Create actual Redux store
+  const store = Redux.createStore(reducer);
 
-function subscribe(listener) {
-  listeners.push(listener);
-}
+  console.log('Initial state:', store.getState());
 
-function getState() {
-  return state;
-}
+  // Subscribe to state changes
+  store.subscribe(() => {
+    console.log('State updated:', store.getState());
+  });
 
-// Test it out
-console.log('Initial state:', getState());
+  // Dispatch actions
+  store.dispatch({ type: 'SET_COUNT', payload: 1 });
+  store.dispatch({ type: 'UPDATE_BOTH', payload: { count: 2, user: 'Bob' } });
+  store.dispatch({ type: 'SET_COUNT', payload: 3 });
 
-subscribe((state) => {
-  console.log('State updated:', state);
-});
-
-dispatch({ type: 'SET_COUNT', payload: 1 });
-dispatch({ type: 'UPDATE_BOTH', payload: { count: 2, user: 'Bob' } });
-dispatch({ type: 'SET_COUNT', payload: 3 });
-
-console.log('Final state:', getState());
-console.log('✓ Redux-style state management complete');`
+  console.log('Final state:', store.getState());
+  console.log('✓ Real Redux complete');
+};
+script.onerror = () => console.error('Failed to load Redux');
+document.head.appendChild(script);`
     }
   },
   {
     id: 'component-system',
     title: 'Component System',
-    description: 'Reusable UI components - 93% smaller than React',
+    description: 'Reusable UI components - 94% smaller than React',
     vanillaSize: '3kb',
-    librarySize: '42kb',
-    libraryName: 'React',
+    librarySize: '52kb',
+    libraryName: 'React + ReactDOM',
     vanilla: {
       code: `// Simple component system with state and lifecycle
 function component(element, initialState = {}) {
@@ -149,54 +147,81 @@ setTimeout(() => counter.setState({ count: 7 }), 200);
 setTimeout(() => console.log('✓ Component lifecycle complete'), 300);`
     },
     library: {
-      code: `// React-style component with hooks simulation
-let currentState;
-let currentComponent;
+      code: `// Real React from CDN (42kb minified + 10kb ReactDOM)
+const reactScript = document.createElement('script');
+reactScript.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
+reactScript.crossOrigin = 'anonymous';
 
-function useState(initialValue) {
-  if (currentState === undefined) {
-    currentState = initialValue;
-  }
+reactScript.onload = () => {
+  const reactDOMScript = document.createElement('script');
+  reactDOMScript.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
+  reactDOMScript.crossOrigin = 'anonymous';
 
-  const setState = (newValue) => {
-    currentState = newValue;
-    if (currentComponent && currentComponent.onUpdate) {
-      currentComponent.onUpdate();
+  reactDOMScript.onload = () => {
+    console.log('✓ React library loaded (42kb + 10kb ReactDOM)');
+
+    const { useState } = React;
+    const { createRoot } = ReactDOM;
+
+    // Real React component with hooks
+    function Counter() {
+      const [count, setCount] = useState(0);
+
+      React.useEffect(() => {
+        console.log('Component updated:', { count });
+      }, [count]);
+
+      return React.createElement('div', null,
+        React.createElement('h3', null, \`Count: \${count}\`),
+        React.createElement('p', null, \`Status: \${count > 5 ? 'High' : 'Low'}\`)
+      );
     }
+
+    // Mount to DOM
+    const container = document.createElement('div');
+    const root = createRoot(container);
+
+    console.log('Component mounted');
+    root.render(React.createElement(Counter));
+
+    // Simulate updates by re-rendering with different initial states
+    setTimeout(() => {
+      function Counter3() {
+        const [count] = useState(3);
+        React.useEffect(() => {
+          console.log('Component updated:', { count });
+        }, []);
+        return React.createElement('div', null,
+          React.createElement('h3', null, \`Count: \${count}\`),
+          React.createElement('p', null, \`Status: \${count > 5 ? 'High' : 'Low'}\`)
+        );
+      }
+      root.render(React.createElement(Counter3));
+    }, 100);
+
+    setTimeout(() => {
+      function Counter7() {
+        const [count] = useState(7);
+        React.useEffect(() => {
+          console.log('Component updated:', { count });
+        }, []);
+        return React.createElement('div', null,
+          React.createElement('h3', null, \`Count: \${count}\`),
+          React.createElement('p', null, \`Status: \${count > 5 ? 'High' : 'Low'}\`)
+        );
+      }
+      root.render(React.createElement(Counter7));
+    }, 200);
+
+    setTimeout(() => console.log('✓ Real React complete'), 300);
   };
 
-  return [currentState, setState];
-}
-
-function Counter() {
-  const [count, setCount] = useState(0);
-
-  const render = () => {
-    console.log('Component updated:', { count });
-    return \`
-      <div>
-        <h3>Count: \${count}</h3>
-        <p>Status: \${count > 5 ? 'High' : 'Low'}</p>
-      </div>
-    \`;
-  };
-
-  return { render, setCount };
-}
-
-// Mount component
-currentComponent = Counter();
-console.log('Component mounted');
-console.log(currentComponent.render());
-
-// Simulate updates
-currentComponent.onUpdate = () => {
-  console.log(currentComponent.render());
+  reactDOMScript.onerror = () => console.error('Failed to load ReactDOM');
+  document.head.appendChild(reactDOMScript);
 };
 
-setTimeout(() => currentComponent.setCount(3), 100);
-setTimeout(() => currentComponent.setCount(7), 200);
-setTimeout(() => console.log('✓ React-style component complete'), 300);`
+reactScript.onerror = () => console.error('Failed to load React');
+document.head.appendChild(reactScript);`
     }
   },
   {
@@ -402,102 +427,44 @@ setTimeout(() => {
 setTimeout(() => console.log('✓ HTTP client complete'), 1000);`
     },
     library: {
-      code: `// Axios-style HTTP client
-class AxiosInstance {
-  constructor() {
-    this.interceptors = {
-      request: { handlers: [] },
-      response: { handlers: [] }
-    };
-    this.defaults = {
-      headers: { 'Content-Type': 'application/json' }
-    };
-  }
+      code: `// Real Axios from CDN (13kb minified)
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js';
+script.onload = () => {
+  console.log('✓ Axios library loaded (13kb)');
 
-  async request(config) {
-    // Merge defaults
-    config = { ...this.defaults, ...config };
-
-    // Request interceptors
-    for (const handler of this.interceptors.request.handlers) {
-      config = await handler.fulfilled(config);
-    }
-
-    console.log(\`📡 \${config.method || 'GET'} \${config.url}\`);
-
-    try {
-      // Real fetch request
-      const fetchOptions = {
-        method: config.method || 'GET',
-        headers: config.headers || {}
-      };
-
-      if (config.data) {
-        fetchOptions.body = JSON.stringify(config.data);
-        fetchOptions.headers['Content-Type'] = 'application/json';
-      }
-
-      const fetchResponse = await fetch(config.url, fetchOptions);
-      const data = await fetchResponse.json();
-
-      const response = {
-        status: fetchResponse.status,
-        statusText: fetchResponse.statusText,
-        data: data,
-        headers: config.headers,
-        config: config
-      };
-
-      // Response interceptors
-      let result = response;
-      for (const handler of this.interceptors.response.handlers) {
-        result = await handler.fulfilled(result);
-      }
-
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  get(url, config = {}) {
-    return this.request({ ...config, method: 'GET', url });
-  }
-
-  post(url, data, config = {}) {
-    return this.request({ ...config, method: 'POST', url, data });
-  }
-}
-
-// Create instance
-const axios = new AxiosInstance();
-
-// Add interceptors
-axios.interceptors.request.handlers.push({
-  fulfilled: (config) => {
+  // Add request interceptor
+  axios.interceptors.request.use((config) => {
     console.log('🔒 Adding auth token');
     config.headers.Authorization = 'Bearer token123';
     return config;
-  }
-});
+  });
 
-axios.interceptors.response.handlers.push({
-  fulfilled: (response) => {
+  // Add response interceptor
+  axios.interceptors.response.use((response) => {
     console.log(\`✓ Response: \${response.status}\`);
     return response;
-  }
-});
+  });
 
-// Test requests with real API
-axios.get('https://jsonplaceholder.typicode.com/users/1').then(r => console.log('User:', r.data));
-setTimeout(() => {
-  axios.post('https://jsonplaceholder.typicode.com/posts', {
-    title: 'Test Post',
-    body: 'Hello from Lean Stack!',
-    userId: 1
-  }).then(r => console.log('Created post:', r.data));
-}, 100);
-setTimeout(() => console.log('✓ Axios-style complete'), 1000);`
+  // Test requests with real API
+  axios.get('https://jsonplaceholder.typicode.com/users/1')
+    .then(r => console.log('User:', r.data))
+    .catch(err => console.error('GET error:', err.message));
+
+  setTimeout(() => {
+    axios.post('https://jsonplaceholder.typicode.com/posts', {
+      title: 'Test Post',
+      body: 'Hello from Lean Stack!',
+      userId: 1
+    })
+      .then(r => console.log('Created post:', r.data))
+      .catch(err => console.error('POST error:', err.message));
+  }, 100);
+
+  setTimeout(() => console.log('✓ Real Axios complete'), 1000);
+};
+script.onerror = () => console.error('Failed to load Axios');
+document.head.appendChild(script);`
     }
   },
   {
@@ -564,95 +531,43 @@ setTimeout(() => {
 setTimeout(() => console.log('✓ Event bus complete'), 200);`
     },
     library: {
-      code: `// EventEmitter3-style implementation
-class EventEmitter {
-  constructor() {
-    this._events = {};
-    this._maxListeners = 10;
-  }
+      code: `// Real EventEmitter3 from CDN (5kb minified)
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/eventemitter3@5.0.1/umd/eventemitter3.min.js';
+script.onload = () => {
+  console.log('✓ EventEmitter3 loaded (5kb)');
 
-  on(event, listener, context) {
-    if (!this._events[event]) {
-      this._events[event] = [];
-    }
+  // Create emitter instance using real EventEmitter3
+  const emitter = new EventEmitter3();
 
-    this._events[event].push({
-      listener,
-      context,
-      once: false
-    });
+  // Register listeners
+  emitter.on('user:login', (user) => {
+    console.log(\`📢 Event emitted: user:login\`, user);
+    console.log('Handler 1: User logged in:', user.name);
+  });
 
-    return this;
-  }
+  emitter.on('user:login', (user) => {
+    console.log('Handler 2: Welcome,', user.name);
+  });
 
-  once(event, listener, context) {
-    if (!this._events[event]) {
-      this._events[event] = [];
-    }
+  emitter.once('app:ready', () => {
+    console.log(\`📢 Event emitted: app:ready\`);
+    console.log('App ready (fires once)');
+  });
 
-    this._events[event].push({
-      listener,
-      context,
-      once: true
-    });
+  // Emit events
+  emitter.emit('user:login', { name: 'Alice', id: 1 });
+  emitter.emit('app:ready');
+  emitter.emit('app:ready'); // Won't fire again
 
-    return this;
-  }
+  setTimeout(() => {
+    emitter.emit('user:login', { name: 'Bob', id: 2 });
+  }, 100);
 
-  emit(event, ...args) {
-    if (!this._events[event]) return false;
-
-    console.log(\`📢 Event emitted: \${event}\`, args[0]);
-
-    const listeners = this._events[event].slice();
-
-    listeners.forEach(({ listener, context, once }) => {
-      listener.apply(context, args);
-      if (once) {
-        this.removeListener(event, listener);
-      }
-    });
-
-    return true;
-  }
-
-  removeListener(event, listener) {
-    if (!this._events[event]) return this;
-
-    this._events[event] = this._events[event].filter(
-      item => item.listener !== listener
-    );
-
-    return this;
-  }
-}
-
-// Create emitter instance
-const emitter = new EventEmitter();
-
-// Register listeners
-emitter.on('user:login', (user) => {
-  console.log('Handler 1: User logged in:', user.name);
-});
-
-emitter.on('user:login', (user) => {
-  console.log('Handler 2: Welcome,', user.name);
-});
-
-emitter.once('app:ready', () => {
-  console.log('App ready (fires once)');
-});
-
-// Emit events
-emitter.emit('user:login', { name: 'Alice', id: 1 });
-emitter.emit('app:ready');
-emitter.emit('app:ready'); // Won't fire again
-
-setTimeout(() => {
-  emitter.emit('user:login', { name: 'Bob', id: 2 });
-}, 100);
-
-setTimeout(() => console.log('✓ EventEmitter complete'), 200);`
+  setTimeout(() => console.log('✓ Real EventEmitter3 complete'), 200);
+};
+script.onerror = () => console.error('Failed to load EventEmitter3');
+document.head.appendChild(script);`
     }
   },
   {
