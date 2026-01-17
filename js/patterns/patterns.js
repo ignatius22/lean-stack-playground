@@ -227,10 +227,10 @@ document.head.appendChild(reactScript);`
   {
     id: 'routing',
     title: 'Client-Side Routing',
-    description: 'Hash-based navigation - 91% smaller than React Router',
+    description: 'Hash-based navigation - 80% smaller than Navigo',
     vanillaSize: '1.5kb',
-    librarySize: '16kb',
-    libraryName: 'React Router',
+    librarySize: '7.5kb',
+    libraryName: 'Navigo',
     vanilla: {
       code: `// Lightweight hash-based router
 class Router {
@@ -278,62 +278,48 @@ setTimeout(() => router.navigate('/'), 300);
 setTimeout(() => console.log('✓ Routing complete'), 400);`
     },
     library: {
-      code: `// React Router-style navigation
-class Route {
-  constructor(path, component) {
-    this.path = path;
-    this.component = component;
-  }
+      code: `// Real Navigo from CDN (7.5kb minified)
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/navigo@8.11.1/lib/navigo.min.js';
+script.onload = () => {
+  console.log('✓ Navigo library loaded (7.5kb)');
 
-  matches(currentPath) {
-    return this.path === currentPath;
-  }
-}
+  // Create Navigo router instance
+  const router = new Navigo('/');
 
-class BrowserRouter {
-  constructor() {
-    this.routes = [];
-    this.history = [];
-    this.currentPath = '/';
-
-    window.addEventListener('hashchange', () => {
-      this.currentPath = window.location.hash.slice(1) || '/';
-      this.render();
+  // Define routes with real Navigo API
+  router
+    .on('/', () => {
+      console.log('📍 Route: Home page');
+    })
+    .on('/about', () => {
+      console.log('📍 Route: About page');
+    })
+    .on('/contact', () => {
+      console.log('📍 Route: Contact page');
     });
-  }
 
-  addRoute(path, component) {
-    this.routes.push(new Route(path, component));
-    return this;
-  }
+  // Initialize router
+  router.resolve();
 
-  push(path) {
-    this.history.push(this.currentPath);
-    window.location.hash = path;
-  }
+  // Navigate programmatically
+  console.log('Starting navigation test...');
+  setTimeout(() => {
+    router.navigate('/about');
+  }, 100);
 
-  render() {
-    const route = this.routes.find(r => r.matches(this.currentPath));
-    if (route) {
-      route.component();
-    }
-  }
-}
+  setTimeout(() => {
+    router.navigate('/contact');
+  }, 200);
 
-// Setup router
-const router = new BrowserRouter();
+  setTimeout(() => {
+    router.navigate('/');
+  }, 300);
 
-router
-  .addRoute('/', () => console.log('📍 Route: Home page'))
-  .addRoute('/about', () => console.log('📍 Route: About page'))
-  .addRoute('/contact', () => console.log('📍 Route: Contact page'));
-
-// Simulate navigation
-console.log('Starting navigation test...');
-setTimeout(() => router.push('/about'), 100);
-setTimeout(() => router.push('/contact'), 200);
-setTimeout(() => router.push('/'), 300);
-setTimeout(() => console.log('✓ React Router-style complete'), 400);`
+  setTimeout(() => console.log('✓ Real Navigo complete'), 400);
+};
+script.onerror = () => console.error('Failed to load Navigo');
+document.head.appendChild(script);`
     }
   },
   {
@@ -573,10 +559,10 @@ document.head.appendChild(script);`
   {
     id: 'form-validation',
     title: 'Form Validation',
-    description: 'Schema-based validation - 91% smaller than Formik',
+    description: 'Schema-based validation - 86% smaller than Yup',
     vanillaSize: '2kb',
-    librarySize: '22kb',
-    libraryName: 'Formik',
+    librarySize: '14kb',
+    libraryName: 'Yup',
     vanilla: {
       code: `// Simple form validation
 const validator = {
@@ -648,96 +634,72 @@ console.log('Errors:', result2.errors);
 console.log('\\n✓ Validation complete');`
     },
     library: {
-      code: `// Formik-style validation
-class FormValidator {
-  constructor(initialValues, validationSchema) {
-    this.values = initialValues;
-    this.errors = {};
-    this.touched = {};
-    this.validationSchema = validationSchema;
-  }
+      code: `// Real Yup from CDN (14kb minified)
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/yup@1.3.3/index.min.js';
+script.onload = () => {
+  console.log('✓ Yup library loaded (14kb)');
 
-  setFieldValue(field, value) {
-    this.values[field] = value;
-    this.validateField(field);
-  }
+  const yup = window.yup;
 
-  setFieldTouched(field, isTouched = true) {
-    this.touched[field] = isTouched;
-  }
+  // Define schema using real Yup API
+  const schema = yup.object({
+    email: yup.string().required('email is required').email('email must be valid'),
+    password: yup.string().required('password is required').min(8, 'password must be at least 8 chars'),
+    username: yup.string().required('username is required').min(3, 'username must be at least 3 chars').max(20, 'username must be at most 20 chars')
+  });
 
-  validateField(field) {
-    const rules = this.validationSchema[field];
-    const value = this.values[field];
+  // Test validation with invalid data
+  console.log('Test 1 (invalid):');
+  const testData1 = {
+    email: 'invalid-email',
+    password: 'short',
+    username: 'ab'
+  };
 
-    delete this.errors[field];
-
-    if (rules.required && (!value || value.trim() === '')) {
-      this.errors[field] = \`\${field} is required\`;
-      return false;
-    }
-
-    if (rules.email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value)) {
-      this.errors[field] = \`\${field} must be valid email\`;
-      return false;
-    }
-
-    if (rules.minLength && value.length < rules.minLength) {
-      this.errors[field] = \`\${field} must be at least \${rules.minLength} chars\`;
-      return false;
-    }
-
-    if (rules.maxLength && value.length > rules.maxLength) {
-      this.errors[field] = \`\${field} must be at most \${rules.maxLength} chars\`;
-      return false;
-    }
-
-    return true;
-  }
-
-  validateForm() {
-    Object.keys(this.validationSchema).forEach(field => {
-      this.validateField(field);
+  schema.validate(testData1, { abortEarly: false })
+    .then(() => {
+      console.log('Valid: true');
+      console.log('Errors: {}');
+    })
+    .catch((err) => {
+      console.log('Valid: false');
+      const errors = {};
+      err.inner.forEach(error => {
+        errors[error.path] = error.message;
+      });
+      console.log('Errors:', errors);
     });
 
-    return {
-      isValid: Object.keys(this.errors).length === 0,
-      errors: this.errors,
-      values: this.values
+  // Test validation with valid data
+  setTimeout(() => {
+    console.log('\\nTest 2 (valid):');
+    const testData2 = {
+      email: 'user@example.com',
+      password: 'securepass123',
+      username: 'alice'
     };
-  }
-}
 
-// Define schema
-const schema = {
-  email: { required: true, email: true },
-  password: { required: true, minLength: 8 },
-  username: { required: true, minLength: 3, maxLength: 20 }
+    schema.validate(testData2, { abortEarly: false })
+      .then((validData) => {
+        console.log('Valid: true');
+        console.log('Errors: {}');
+        console.log('Validated data:', validData);
+      })
+      .catch((err) => {
+        console.log('Valid: false');
+        const errors = {};
+        err.inner.forEach(error => {
+          errors[error.path] = error.message;
+        });
+        console.log('Errors:', errors);
+      });
+  }, 100);
+
+  setTimeout(() => console.log('\\n✓ Real Yup complete'), 200);
 };
-
-// Test validation
-console.log('Test 1 (invalid):');
-const form1 = new FormValidator({
-  email: 'invalid-email',
-  password: 'short',
-  username: 'ab'
-}, schema);
-
-const result1 = form1.validateForm();
-console.log('Valid:', result1.isValid);
-console.log('Errors:', result1.errors);
-
-console.log('\\nTest 2 (valid):');
-const form2 = new FormValidator({
-  email: 'user@example.com',
-  password: 'securepass123',
-  username: 'alice'
-}, schema);
-
-const result2 = form2.validateForm();
-console.log('Valid:', result2.isValid);
-console.log('Errors:', result2.errors);
-console.log('\\n✓ Formik-style validation complete');`
+script.onerror = () => console.error('Failed to load Yup');
+document.head.appendChild(script);`
     }
   }
 ];
